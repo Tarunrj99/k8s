@@ -32,3 +32,8 @@ jobs:
         run: |
           git add outfile01
           git commit -m "Added outfile01"
+      - name: Push changes
+        uses: ad-m/github-push-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
