@@ -33,9 +33,8 @@ jobs:
           git add outfile01
           git commit -m "Added outfile01"
       - name: Push changes
-        run: |
-          git push https://github.com/${GITHUB_REPO}.git main
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUBTOKEN }}
-        env:
-          GITHUB_REPO: ${{ github.repository }}
+        uses: ad-m/github-push-action@v2
+        with:
+          github_token: ${{ secrets.GITHUBTOKEN }}
+          repository: ${{ github.repository }}
+          branch: main
