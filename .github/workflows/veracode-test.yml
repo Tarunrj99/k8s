@@ -29,29 +29,31 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Create jobs script
+      - name: Create jobs dynamically
         run: |
-          echo '#!/bin/bash' > create_jobs.sh
-          echo 'prev_job=""' > jobs.yml
+          echo '#!/bin/bash' > $GITHUB_WORKSPACE/jobs.yml
+          echo 'prev_job=""' >> $GITHUB_WORKSPACE/jobs.yml
           for line in frontend-repos backend-repos other-repos; do
             line_output="needs.setup.outputs.$line"
             repos=$(echo "${!line_output}" | jq -r '.[]')
             for repo in $repos; do
               job_name="scan-${line}_$repo"
-              echo "$job_name:" >> jobs.yml
-              if [[ -n "$prev_job" ]]; then 
-                echo "  needs: $prev_job" >> jobs.yml
+              echo "$job_name:" >> $GITHUB_WORKSPACE/jobs.yml
+              if [[ -n "$prev_job" ]]; then
+                echo "  needs: $prev_job" >> $GITHUB_WORKSPACE/jobs.yml
               fi
-              echo "  runs-on: ubuntu-latest" >> jobs.yml
-              echo "  steps:" >> jobs.yml
-              echo "    - name: Echo repo" >> jobs.yml
-              echo "      run: echo Repository: $repo" >> jobs.yml
+              echo "  runs-on: ubuntu-latest" >> $GITHUB_WORKSPACE/jobs.yml
+              echo "  steps:" >> $GITHUB_WORKSPACE/jobs.yml
+              echo "    - name: Echo repo" >> $GITHUB_WORKSPACE/jobs.yml
+              echo "      run: echo Repository: $repo" >> $GITHUB_WORKSPACE/jobs.yml
               prev_job="$job_name"
             done
           done
+          cat $GITHUB_WORKSPACE/jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-test.yml
 
-      - name: Run job generation script
-        run: |
-          chmod +x create_jobs.sh
-          ./create_jobs.sh
-          cat jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-test.yml
+      # Remove the redundant step (commented out)
+      # - name: Run job generation script (not needed)
+      #   run: |
+      #     chmod +x create_jobs.sh
+      #     ./create_jobs.sh
+      #     cat jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-test.yml
