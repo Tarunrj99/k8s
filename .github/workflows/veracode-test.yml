@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
       - name: Create file-di directory
         run: mkdir file-di
       - name: Create myfile with content
@@ -24,7 +26,5 @@ jobs:
         run: python test.py -f file-di/myfile -o outfile01
       - name: Commit changes
         run: |
-          git config --local user.email "github-actions-bot@github.com"
-          git config --local user.name "GitHub Actions Bot"
           git add outfile01
           git commit -m "Added outfile01"
