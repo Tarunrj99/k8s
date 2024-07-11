@@ -60,4 +60,3 @@ jobs:
           chmod +x create_jobs.sh
           ./create_jobs.sh
           cat jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-test.yml
-
