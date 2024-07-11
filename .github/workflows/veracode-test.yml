@@ -12,11 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: List files and directories
-        run: ls -l
+      - name: Create file-di directory
+        run: mkdir file-di
+      - name: Create myfile with content
+        run: echo "hello" > file-di/myfile
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Run test.py
-        run: python test.py
+        run: python test.py -f file-di/myfile -o outfile01
+      - name: Commit and push changes
+        run: |
+          git add outfile01
+          git commit -m "Added outfile01"
+          git push origin main
