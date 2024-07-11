@@ -29,12 +29,18 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Outputs
+        run: |
+          echo "Frontend Repos: ${{ needs.setup.outputs.frontend-repos }}"
+          echo "Backend Repos: ${{ needs.setup.outputs.backend-repos }}"
+          echo "Other Repos: ${{ needs.setup.outputs.other-repos }}"
+
       - name: Create jobs script
         run: |
           echo '#!/bin/bash' > create_jobs.sh
           echo 'prev_job=""' >> create_jobs.sh
           for category in frontend-repos backend-repos other-repos; do
-            repos=$(jq -r ".${category}" <<< "${{ needs.setup.outputs }}")
+            repos="${{ needs.setup.outputs.${category} }}"
             for repo in $(echo "$repos" | jq -r '.[]'); do
               job_name="scan-$repo"
               echo "$job_name:" >> jobs.yml
