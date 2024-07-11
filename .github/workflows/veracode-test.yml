@@ -32,18 +32,21 @@ jobs:
       - name: Create jobs script
         run: |
           echo '#!/bin/bash' > create_jobs.sh
-          echo 'prev_job=""' >> create_jobs.sh
+          echo 'prev_job=""' > jobs.yml
           for category in frontend-repos backend-repos other-repos; do
-            echo "for repo in \$(echo \${{ needs.setup.outputs.${category} }} | jq -r '.[]'); do" >> create_jobs.sh
-            echo '  job_name="scan-${category}_$repo"' >> create_jobs.sh
-            echo '  echo "$job_name:" >> jobs.yml' >> create_jobs.sh
-            echo '  if [[ -n "$prev_job" ]]; then echo "  needs: $prev_job" >> jobs.yml; fi' >> create_jobs.sh
-            echo '  echo "  runs-on: ubuntu-latest" >> jobs.yml' >> create_jobs.sh
-            echo '  echo "  steps:" >> jobs.yml' >> create_jobs.sh
-            echo '  echo "    - name: Echo repo" >> jobs.yml' >> create_jobs.sh
-            echo '  echo "      run: echo Repository: $repo" >> jobs.yml' >> create_jobs.sh
-            echo '  prev_job="$job_name"' >> create_jobs.sh
-            echo 'done' >> create_jobs.sh
+            repos=$(echo "${{ needs.setup.outputs.${category} }}" | jq -r '.[]')
+            for repo in $repos; do
+              job_name="scan-${category}_$repo"
+              echo "$job_name:" >> jobs.yml
+              if [[ -n "$prev_job" ]]; then 
+                echo "  needs: $prev_job" >> jobs.yml
+              fi
+              echo "  runs-on: ubuntu-latest" >> jobs.yml
+              echo "  steps:" >> jobs.yml
+              echo "    - name: Echo repo" >> jobs.yml
+              echo "      run: echo Repository: $repo" >> jobs.yml
+              prev_job="$job_name"
+            done
           done
 
       - name: Run job generation script
