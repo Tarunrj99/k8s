@@ -22,8 +22,9 @@ jobs:
           python-version: '3.x'
       - name: Run test.py
         run: python test.py -f file-di/myfile -o outfile01
-      - name: Commit and push changes
+      - name: Commit changes
         run: |
+          git config --local user.email "github-actions-bot@github.com"
+          git config --local user.name "GitHub Actions Bot"
           git add outfile01
           git commit -m "Added outfile01"
-          git push origin main
