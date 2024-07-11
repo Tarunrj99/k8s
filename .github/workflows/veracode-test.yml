@@ -33,43 +33,8 @@ jobs:
           git add outfile01
           git commit -m "Added outfile01"
       - name: Push changes
-name: Python App
-
-on:
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: false
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
-      - name: Create file-di directory
-        run: mkdir file-di
-      - name: Create myfile with content
-        run: echo "hello" > file-di/myfile
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - name: Run test.py
-        run: python test.py -f file-di/myfile -o outfile01
-      - name: Set Git identity
         run: |
-          git config --local user.email "github-actions-bot@github.com"
-          git config --local user.name "GitHub Actions Bot"
-      - name: Commit changes
-        run: |
-          git add outfile01
-          git commit -m "Added outfile01"
-      - name: Push changes
-        run: |
-          git push https://github.com/${GITHUB_REPO}.git
+          git push https://github.com/${GITHUB_REPO}.git main
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
         env:
