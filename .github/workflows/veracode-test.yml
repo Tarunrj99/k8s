@@ -34,7 +34,8 @@ jobs:
           echo '#!/bin/bash' > create_jobs.sh
           echo 'prev_job=""' > jobs.yml
           for line in frontend-repos backend-repos other-repos; do
-            repos=$(echo "${{ needs.setup.outputs.${line} }}" | jq -r '.[]')
+            line_output="needs.setup.outputs.$line"
+            repos=$(echo "${!line_output}" | jq -r '.[]')
             for repo in $repos; do
               job_name="scan-${line}_$repo"
               echo "$job_name:" >> jobs.yml
