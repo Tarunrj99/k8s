@@ -1,54 +1,158 @@
-name: Veracode SCA Test
+name: Veracode SCA
 
 on:
   workflow_dispatch:
+  schedule:
+  - cron: "0 0 * * 6"
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      frontend-repos: ${{ steps.set-frontend-repos.outputs.repos }}
-      backend-repos: ${{ steps.set-backend-repos.outputs.repos }}
-      other-repos: ${{ steps.set-other-repos.outputs.repos }}
-    steps:
-      - id: set-frontend-repos
-        run: |
-          echo "::set-output name=repos::$(jq -n '[ "repo1", "repo2" ]')"
-      - id: set-backend-repos
-        run: |
-          echo "::set-output name=repos::$(jq -n '[ "repo3", "repo4" ]')"
-      - id: set-other-repos
-        run: |
-          echo "::set-output name=repos::$(jq -n '[ "repo5", "repo6" ]')"
-  generate-jobs:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create jobs script
-        run: |
-          echo '#!/bin/bash' > create_jobs.sh
-          echo 'prev_job=""' >> create_jobs.sh
-          for category in frontend-repos backend-repos other-repos; do
-            repos=$(jq -r ".${category}" <<< "${{ needs.setup.outputs }}")
-            for repo in $(echo "$repos" | jq -r '.[]'); do
-              job_name="scan-$repo"
-              echo "$job_name:" >> jobs.yml
-              if [[ -n "$prev_job" ]]; then
-                echo "  needs: $prev_job" >> jobs.yml
-              fi
-              echo "  runs-on: ubuntu-latest" >> jobs.yml
-              echo "  steps:" >> jobs.yml
-              echo "    - name: Echo repo" >> jobs.yml
-              echo "      run: echo Repository: $repo" >> jobs.yml
-              prev_job="$job_name"
-            done
-          done
-      - name: Run job generation script
-        run: |
-          chmod +x create_jobs.sh
-          ./create_jobs.sh
-          cat jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-test.yml
+
+  scan_pipelines_api:
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: pipelines.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_exchange_frontend:
+    needs: scan_pipelines_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: exchange.frontend
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_insights_api:
+    needs: scan_exchange_frontend
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: insights.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_rocket_facial_frontend:
+    needs: scan_insights_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: rocket.facial.frontend
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_webhooks:
+    needs: scan_rocket_facial_frontend
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: webhooks
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_simplici_superadmin_api:
+    needs: scan_webhooks
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: simplici.superadmin.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_simplici_approval_frontend:
+    needs: scan_simplici_superadmin_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: simplici.approval.frontend
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_authentication_api:
+    needs: scan_simplici_approval_frontend
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: authentication.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_webcomponents:
+    needs: scan_authentication_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: webcomponents
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_auction_sba7_api:
+    needs: scan_webcomponents
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: auction-sba7.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_finance_api:
+    needs: scan_auction_sba7_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: finance.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  scan_fortress_api:
+    needs: scan_finance_api
+    always: true
+    uses: satschel/devops.scripts/.github/workflows/veracode-scan.yml@v3
+    with:
+      REPO_NAME: fortress.api
+    secrets:
+      VERACODE_API_ID: ${{ secrets.VERACODE_API_ID }}
+      VERACODE_API_KEY: ${{ secrets.VERACODE_API_KEY }}
+      TOKEN_GITHUB_CICD: ${{ secrets.TOKEN_GITHUB_CICD }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
