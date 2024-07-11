@@ -24,6 +24,10 @@ jobs:
           python-version: '3.x'
       - name: Run test.py
         run: python test.py -f file-di/myfile -o outfile01
+      - name: Set Git identity
+        run: |
+          git config --local user.email "github-actions-bot@github.com"
+          git config --local user.name "GitHub Actions Bot"
       - name: Commit changes
         run: |
           git add outfile01
