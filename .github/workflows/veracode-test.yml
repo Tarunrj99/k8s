@@ -33,10 +33,10 @@ jobs:
         run: |
           echo '#!/bin/bash' > create_jobs.sh
           echo 'prev_job=""' > jobs.yml
-          for category in frontend-repos backend-repos other-repos; do
-            repos=$(echo "${{ needs.setup.outputs.${category} }}" | jq -r '.[]')
+          for line in frontend-repos backend-repos other-repos; do
+            repos=$(echo "${{ needs.setup.outputs.${line} }}" | jq -r '.[]')
             for repo in $repos; do
-              job_name="scan-${category}_$repo"
+              job_name="scan-${line}_$repo"
               echo "$job_name:" >> jobs.yml
               if [[ -n "$prev_job" ]]; then 
                 echo "  needs: $prev_job" >> jobs.yml
