@@ -1,0 +1,53 @@
+name: Veracode SCA Test
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend-repos: ${{ steps.set-frontend-repos.outputs.repos }}
+      backend-repos: ${{ steps.set-backend-repos.outputs.repos }}
+      other-repos: ${{ steps.set-other-repos.outputs.repos }}
+    steps:
+      - id: set-frontend-repos
+        run: |
+          echo "::set-output name=repos::$(jq -n '[ "repo1", "repo2" ]')"
+      - id: set-backend-repos
+        run: |
+          echo "::set-output name=repos::$(jq -n '[ "repo3", "repo4" ]')"
+      - id: set-other-repos
+        run: |
+          echo "::set-output name=repos::$(jq -n '[ "repo5", "repo6" ]')"
+
+  generate-jobs:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create jobs script
+        run: |
+          echo '#!/bin/bash' > create_jobs.sh
+          echo 'prev_job=""' >> create_jobs.sh
+          for category in frontend-repos backend-repos other-repos; do
+            echo "for repo in \$(echo \${{ needs.setup.outputs.${category} }} | jq -r '.[]'); do" >> create_jobs.sh
+            echo '  job_name="scan-${category}_$repo"' >> create_jobs.sh
+            echo '  echo "$job_name:" >> jobs.yml' >> create_jobs.sh
+            echo '  if [[ -n "$prev_job" ]]; then echo "  needs: $prev_job" >> jobs.yml; fi' >> create_jobs.sh
+            echo '  echo "  runs-on: ubuntu-latest" >> jobs.yml' >> create_jobs.sh
+            echo '  echo "  steps:" >> jobs.yml' >> create_jobs.sh
+            echo '  echo "    - name: Echo repo" >> jobs.yml' >> create_jobs.sh
+            echo '  echo "      run: echo Repository: $repo" >> jobs.yml' >> create_jobs.sh
+            echo '  prev_job="$job_name"' >> create_jobs.sh
+            echo 'done' >> create_jobs.sh
+          done
+
+      - name: Run job generation script
+        run: |
+          chmod +x create_jobs.sh
+          ./create_jobs.sh
+          cat jobs.yml >> $GITHUB_WORKSPACE/.github/workflows/veracode-sca-test.yml
