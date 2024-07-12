@@ -36,6 +36,8 @@ jobs:
           
       - name: Push changes
         run: |
+          git config --local user.email "github-actions-bot@github.com"
+          git config --local user.name "GitHub Actions Bot"
           git config --local credential.username ${GITHUB_ACTOR}
           git config --local credential.helper store
           echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
