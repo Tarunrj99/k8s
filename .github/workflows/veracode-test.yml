@@ -37,8 +37,8 @@ jobs:
           git config --local credential.username ${GITHUB_ACTOR}
           git config --local credential.helper store
           echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
-          git add.
-          git commit -m "Added outfile01 to.github/workflows"
+          git add .
+          git commit -m "Added outfile01 to .github/workflows"
           git push https://github.com/${GITHUB_REPO}.git main
         env:
           GITHUB_REPO: ${{ github.repository }}
