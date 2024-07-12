@@ -34,8 +34,11 @@ jobs:
           git commit -m "Added outfile01"
       - name: Push changes
         run: |
+          git config --local credential.username ${GITHUB_ACTOR}
+          git config --local credential.helper store
+          echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
           git push https://github.com/${GITHUB_REPO}.git main
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_REPO: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          SECRETS_GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
