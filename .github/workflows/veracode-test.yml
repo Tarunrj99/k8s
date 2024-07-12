@@ -14,11 +14,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
-      # - name: Create file-di directory
-      #   run: mkdir -p file-di
       - name: Create file-di directory
         run: |
-          if [ ! -d "file-di" ]; then
+          if [! -d "file-di" ]; then
             mkdir file-di
           fi
       - name: Create myfile with content
@@ -30,24 +28,17 @@ jobs:
       - name: Run test.py
         run: python test.py -f file-di/myfile -o outfile01
         
-      # - name: Set Git identity
-      #   run: |
-      #     git config --local user.email "github-actions-bot@github.com"
-      #     git config --local user.name "GitHub Actions Bot"
-      # - name: Commit changes
-      #   run: |
-      #     git add outfile01
-      #     git commit -m "Added outfile01"
-          
       - name: Push changes
         run: |
+          mkdir -p.github/workflows
+          mv outfile01.github/workflows/
           git config --local user.email "github-actions-bot@github.com"
           git config --local user.name "GitHub Actions Bot"
           git config --local credential.username ${GITHUB_ACTOR}
           git config --local credential.helper store
           echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
-          git add .
-          git commit -m "Added outfile01"
+          git add.
+          git commit -m "Added outfile01 to.github/workflows"
           git push https://github.com/${GITHUB_REPO}.git main
         env:
           GITHUB_REPO: ${{ github.repository }}
