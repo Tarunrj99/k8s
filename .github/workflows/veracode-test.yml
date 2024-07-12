@@ -30,8 +30,8 @@ jobs:
         
       - name: Push changes
         run: |
-          mkdir -p.github/workflows
-          mv outfile01.github/workflows/
+          mkdir -p .github/workflows
+          mv outfile01 .github/workflows/
           git config --local user.email "github-actions-bot@github.com"
           git config --local user.name "GitHub Actions Bot"
           git config --local credential.username ${GITHUB_ACTOR}
