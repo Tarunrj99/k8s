@@ -14,8 +14,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: true
+      # - name: Create file-di directory
+      #   run: mkdir -p file-di
       - name: Create file-di directory
-        run: mkdir -p file-di
+        run: |
+          if [ ! -d "file-di" ]; then
+            mkdir file-di
+          fi
       - name: Create myfile with content
         run: echo "hello" > file-di/myfile
       - name: Set up Python
