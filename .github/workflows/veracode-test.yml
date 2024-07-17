@@ -49,7 +49,7 @@ jobs:
 
   build2:
     needs: [build]
-    always: true
+    if: success() || failure()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
