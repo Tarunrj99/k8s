@@ -48,6 +48,8 @@ jobs:
       #     SECRETS_GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
   build2:
+    needs: [build]
+    always: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
