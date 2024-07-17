@@ -28,21 +28,60 @@ jobs:
       - name: Run test.py
         run: python test.py -f file-di/myfile -o outfile01
         
-      - name: Push changes
+      # - name: Push changes
+      #   run: |
+      #     mkdir -p .github/workflows
+      #     mv outfile01 .github/workflows/
+      #     # git config --local user.email "github-actions-bot@github.com"
+      #     # git config --local user.name "GitHub Actions Bot"
+      #     git config --local user.email "tarunrj99@gmail.com"
+      #     git config --local user.name "Tarunrj99"
+      #     # git config --local credential.username ${GITHUB_ACTOR}
+      #     # git config --local credential.helper store
+      #     # echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
+      #     git add .
+      #     git commit -m "Added outfile01 to .github/workflows"
+      #     git push https://github.com/${GITHUB_REPO}.git main
+      #   env:
+      #     GITHUB_REPO: ${{ github.repository }}
+      #     GITHUB_ACTOR: ${{ github.actor }}
+      #     SECRETS_GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+
+  build2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Create file-di directory
         run: |
-          mkdir -p .github/workflows
-          mv outfile01 .github/workflows/
-          # git config --local user.email "github-actions-bot@github.com"
-          # git config --local user.name "GitHub Actions Bot"
-          git config --local user.email "tarunrj99@gmail.com"
-          git config --local user.name "Tarunrj99"
-          # git config --local credential.username ${GITHUB_ACTOR}
-          # git config --local credential.helper store
-          # echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
-          git add .
-          git commit -m "Added outfile01 to .github/workflows"
-          git push https://github.com/${GITHUB_REPO}.git main
-        env:
-          GITHUB_REPO: ${{ github.repository }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          SECRETS_GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          if [! -d "file-di" ]; then
+            mkdir file-di
+          fi
+      - name: Create myfile with content
+        run: echo "hello" > file-di/myfile
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Run test.py
+        run: python test.py -f file-di/myfile -o outfile01
+        
+      # - name: Push changes
+      #   run: |
+      #     mkdir -p .github/workflows
+      #     mv outfile01 .github/workflows/
+      #     # git config --local user.email "github-actions-bot@github.com"
+      #     # git config --local user.name "GitHub Actions Bot"
+      #     git config --local user.email "tarunrj99@gmail.com"
+      #     git config --local user.name "Tarunrj99"
+      #     # git config --local credential.username ${GITHUB_ACTOR}
+      #     # git config --local credential.helper store
+      #     # echo "https://${SECRETS_GITHUBTOKEN}:@github.com" >> ~/.git-credentials
+      #     git add .
+      #     git commit -m "Added outfile01 to .github/workflows"
+      #     git push https://github.com/${GITHUB_REPO}.git main
+      #   env:
+      #     GITHUB_REPO: ${{ github.repository }}
+      #     GITHUB_ACTOR: ${{ github.actor }}
+      #     SECRETS_GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
