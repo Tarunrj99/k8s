@@ -27,7 +27,10 @@ jobs:
           python-version: '3.x'
       - name: Run test.py
         run: python test.py -f file-di/myfile -o outfile01
-        
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+
       # - name: Push changes
       #   run: |
       #     mkdir -p .github/workflows
